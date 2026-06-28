@@ -42,32 +42,34 @@ crontab -e
 0 8 * * 1 cd /path/to/wust-schedule-ics && python3 generate_ics.py
 ```
 
-### 4. 提供订阅
+### 4. 提供内部订阅
 
-**方式 A — Nginx 直接托管**（最简单）：
+ICS 文件只需服务器内部能访问即可，不用暴露到公网。
 
-```nginx
-server {
-    listen 80;
-    location /schedule.ics {
-        alias /path/to/wust-schedule-ics/schedule.ics;
-        add_header Content-Type "text/calendar; charset=utf-8";
-    }
-}
-```
-
-订阅链接：`http://你的服务器IP/schedule.ics`
-
-**方式 B — 推送到 GitHub Pages**：
-
-服务器生成 ICS 后自动推送到 GitHub，利用 GitHub Pages 提供 HTTPS 订阅。
+**方式 A — 丢到现有网站目录下**（最简单）：
 
 ```bash
+# 假设你的网站根目录是 /var/www/html
+python3 generate_ics.py --output /var/www/html/schedule.ics
 crontab -e
-0 8 * * 1 cd /path/to/wust-schedule-ics && python3 generate_ics.py --push
+0 8 * * 1 cd /path/to/wust-schedule-ics && python3 generate_ics.py --output /var/www/html/schedule.ics
 ```
 
-订阅链接：`https://xsddszrc.github.io/wust-schedule-ics/schedule.ics`
+网站直接访问 `http://127.0.0.1/schedule.ics` 即可订阅。
+
+**方式 B — 独立端口**（网站和脚本解耦）：
+
+```bash
+# 启动内部 HTTP 服务（只监听 127.0.0.1，外部无法访问）
+python3 -m http.server 9999 --bind 127.0.0.1 --directory /path/to/wust-schedule-ics &
+
+# crontab
+0 8 * * 1 cd /path/to/wust-schedule-ics && python3 generate_ics.py
+```
+
+订阅链接：`http://127.0.0.1:9999/schedule.ics`
+
+两种方式都只绑定本地回环地址，端口 80/443 被占也无所谓。
 
 ---
 
