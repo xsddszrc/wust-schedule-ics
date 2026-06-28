@@ -83,7 +83,7 @@ python3 -m http.server 9999 --bind 127.0.0.1 --directory /path/to/wust-schedule-
 
 ## 方案三：油猴脚本（手动）
 
-安装 `wust-schedule-ics.user.js` → 登录教务 → 课表页面 → 点击"📅 导出ICS"。
+安装 [wust-schedule-ics.user.js](https://xsddszrc.github.io/wust-schedule-ics/wust-schedule-ics.user.js) → 登录教务 → 课表页面 → 点击"📅 导出ICS"。
 
 零依赖，适合偶尔手动导出。每次课表变化需重新操作。
 
