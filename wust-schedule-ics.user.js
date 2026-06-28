@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         武科大强智教务 课表导出 ICS
-// @namespace    https://github.com/wust-schedule-ics
+// @name         武科大课表导出 ICS（仅手动）
+// @namespace    https://github.com/xsddszrc/wust-schedule-ics
 // @version      1.1
-// @description  在学期课表页面添加"导出ICS"按钮，一键解析课表并下载 .ics 日历文件
+// @description  仅用于手动获取 ICS 日历：在学期课表页面添加"导出ICS"按钮，点击下载 .ics 文件。如需自动订阅请用配套 Python 脚本。
 // @author       wust-ics
 // @match        https://bkjx.wust.edu.cn/jsxsd/xskb/xskb_list.do*
 // @grant        none
