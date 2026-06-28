@@ -15,6 +15,8 @@
 ```bash
 git clone https://github.com/xsddszrc/wust-schedule-ics.git
 cd wust-schedule-ics
+python3 -m venv .venv
+source .venv/bin/activate
 pip install playwright beautifulsoup4 ddddocr
 playwright install --with-deps chromium
 cp .env.example .env
@@ -29,7 +31,7 @@ WUST_PASSWORD=你的密码
 ### 2. 首次运行
 
 ```bash
-python3 generate_ics.py --login
+.venv/bin/python generate_ics.py --login
 ```
 
 自动完成 CAS 登录（验证码自动识别）→ 抓取课表 → 生成 `schedule.ics`
@@ -39,7 +41,7 @@ python3 generate_ics.py --login
 ```bash
 crontab -e
 # 每周一早 8:00
-0 8 * * 1 cd /path/to/wust-schedule-ics && python3 generate_ics.py
+0 8 * * 1 cd /path/to/wust-schedule-ics && .venv/bin/python generate_ics.py
 ```
 
 ### 4. 提供内部订阅
@@ -50,9 +52,9 @@ ICS 文件只需服务器内部能访问即可，不用暴露到公网。
 
 ```bash
 # 假设你的网站根目录是 /var/www/html
-python3 generate_ics.py --output /var/www/html/schedule.ics
+.venv/bin/python generate_ics.py --output /var/www/html/schedule.ics
 crontab -e
-0 8 * * 1 cd /path/to/wust-schedule-ics && python3 generate_ics.py --output /var/www/html/schedule.ics
+0 8 * * 1 cd /path/to/wust-schedule-ics && .venv/bin/python generate_ics.py --output /var/www/html/schedule.ics
 ```
 
 网站直接访问 `http://127.0.0.1/schedule.ics` 即可订阅。
@@ -64,7 +66,7 @@ crontab -e
 python3 -m http.server 9999 --bind 127.0.0.1 --directory /path/to/wust-schedule-ics &
 
 # crontab
-0 8 * * 1 cd /path/to/wust-schedule-ics && python3 generate_ics.py
+0 8 * * 1 cd /path/to/wust-schedule-ics && .venv/bin/python generate_ics.py
 ```
 
 订阅链接：`http://127.0.0.1:9999/schedule.ics`
@@ -93,10 +95,10 @@ python3 -m http.server 9999 --bind 127.0.0.1 --directory /path/to/wust-schedule-
 
 | 命令 | 说明 |
 |------|------|
-| `python3 generate_ics.py --login` | 首次登录 |
-| `python3 generate_ics.py` | 抓取课表，生成 ICS |
-| `python3 generate_ics.py --push` | 抓取 + 推送到 GitHub |
-| `python3 generate_ics.py --semester-start 2026-03-09` | 手动指定开学日期 |
+| `.venv/bin/python generate_ics.py --login` | 首次登录 |
+| `.venv/bin/python generate_ics.py` | 抓取课表，生成 ICS |
+| `.venv/bin/python generate_ics.py --push` | 抓取 + 推送到 GitHub |
+| `.venv/bin/python generate_ics.py --semester-start 2026-03-09` | 手动指定开学日期 |
 
 ---
 
