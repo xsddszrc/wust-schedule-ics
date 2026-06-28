@@ -13,7 +13,7 @@
 ### 1. 部署
 
 ```bash
-git clone git@github.com:xsddszrc/wust-schedule-ics.git
+git clone https://github.com/xsddszrc/wust-schedule-ics.git
 cd wust-schedule-ics
 pip install playwright beautifulsoup4 ddddocr
 playwright install --with-deps chromium
