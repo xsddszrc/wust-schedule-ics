@@ -40,8 +40,8 @@ WUST_PASSWORD=你的密码
 
 ```bash
 crontab -e
-# 每周一早 8:00
-0 8 * * 1 cd /path/to/wust-schedule-ics && .venv/bin/python generate_ics.py
+# 每周一早 8:00（先拉取更新，再执行）
+0 8 * * 1 cd /path/to/wust-schedule-ics && git pull && .venv/bin/python generate_ics.py
 ```
 
 ### 4. 提供内部订阅
