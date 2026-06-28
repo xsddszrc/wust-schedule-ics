@@ -1,9 +1,12 @@
 // ==UserScript==
 // @name         武科大课表导出 ICS（仅手动）
 // @namespace    https://github.com/xsddszrc/wust-schedule-ics
-// @version      1.1
+// @version      1.2
 // @description  仅用于手动获取 ICS 日历：在学期课表页面添加"导出ICS"按钮，点击下载 .ics 文件。如需自动订阅请用配套 Python 脚本。
-// @author       wust-ics
+// @author       xsddszrc
+// @homepage     https://github.com/xsddszrc/wust-schedule-ics
+// @updateURL    https://xsddszrc.github.io/wust-schedule-ics/wust-schedule-ics.user.js
+// @downloadURL  https://xsddszrc.github.io/wust-schedule-ics/wust-schedule-ics.user.js
 // @match        https://bkjx.wust.edu.cn/jsxsd/xskb/xskb_list.do*
 // @grant        none
 // ==/UserScript==
@@ -12,19 +15,20 @@
     'use strict';
 
     // ============ 配置区（可按需修改） ============
-    // 各节次对应的时间。key 为节次号，value 为 [开始时间, 结束时间]
+    // 黄家湖校区作息时间。key: 节次号, value: [开始时间, 结束时间]
+    // 青山校区上午早 20 分钟，参照 Python 脚本开头的注释修改
     const PERIOD_TIME = {
-        1: ['08:00', '08:45'],
-        2: ['08:50', '09:35'],
-        3: ['10:15', '11:00'],
-        4: ['11:05', '11:50'],
-        5: ['14:00', '14:45'],
-        6: ['14:50', '15:35'],
-        7: ['16:15', '17:00'],
-        8: ['17:05', '17:50'],
-        9: ['19:00', '19:45'],
-        10: ['19:50', '20:35'],
-        11: ['20:45', '21:30'],
+        1:  ['08:20', '09:05'],
+        2:  ['09:15', '10:00'],
+        3:  ['10:20', '11:05'],
+        4:  ['11:15', '12:00'],
+        5:  ['14:00', '14:45'],
+        6:  ['14:55', '15:40'],
+        7:  ['16:00', '16:45'],
+        8:  ['16:55', '17:40'],
+        9:  ['18:40', '19:25'],
+        10: ['19:35', '20:20'],
+        11: ['20:40', '21:25'],
         12: ['21:35', '22:20'],
     };
 

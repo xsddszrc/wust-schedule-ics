@@ -35,24 +35,46 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 AUTH_FILE = SCRIPT_DIR / "auth_state.json"
 OUTPUT_FILE = SCRIPT_DIR / "schedule.ics"
 CONFIG_FILE = SCRIPT_DIR / ".wust_ics_config.json"
+ENV_FILE = SCRIPT_DIR / ".env"
+
+
+def load_dotenv():
+    """加载 .env 文件到环境变量（不覆盖已有值）"""
+    if not ENV_FILE.exists():
+        return
+    for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip()
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+# 自动加载
+load_dotenv()
 
 # ============ 教务系统 URL ============
 LOGIN_URL = "https://bkjx.wust.edu.cn/jsxsd/"
 SCHEDULE_URL = "https://bkjx.wust.edu.cn/jsxsd/xskb/xskb_list.do"
 
-# ============ 节次 → 时间映射 ============
+# ============ 节次 → 时间映射（黄家湖校区） ============
+# 45 分钟/节，两节之间休息 10min，两大节之间休息 20min
+# 如需修改：key 为节次号，value 为 (开始时间, 结束时间)
+# 青山校区上午早 20 分钟：1-2节 08:00-09:40，3-4节 10:00-11:40
 PERIOD_TIME = {
-    1:  ("08:00", "08:45"),
-    2:  ("08:50", "09:35"),
-    3:  ("10:15", "11:00"),
-    4:  ("11:05", "11:50"),
+    1:  ("08:20", "09:05"),
+    2:  ("09:15", "10:00"),
+    3:  ("10:20", "11:05"),
+    4:  ("11:15", "12:00"),
     5:  ("14:00", "14:45"),
-    6:  ("14:50", "15:35"),
-    7:  ("16:15", "17:00"),
-    8:  ("17:05", "17:50"),
-    9:  ("19:00", "19:45"),
-    10: ("19:50", "20:35"),
-    11: ("20:45", "21:30"),
+    6:  ("14:55", "15:40"),
+    7:  ("16:00", "16:45"),
+    8:  ("16:55", "17:40"),
+    9:  ("18:40", "19:25"),
+    10: ("19:35", "20:20"),
+    11: ("20:40", "21:25"),
     12: ("21:35", "22:20"),
 }
 
