@@ -35,6 +35,25 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 AUTH_FILE = SCRIPT_DIR / "auth_state.json"
 OUTPUT_FILE = SCRIPT_DIR / "schedule.ics"
 CONFIG_FILE = SCRIPT_DIR / ".wust_ics_config.json"
+ENV_FILE = SCRIPT_DIR / ".env"
+
+
+def load_dotenv():
+    """加载 .env 文件到环境变量（不覆盖已有值）"""
+    if not ENV_FILE.exists():
+        return
+    for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip()
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+# 自动加载
+load_dotenv()
 
 # ============ 教务系统 URL ============
 LOGIN_URL = "https://bkjx.wust.edu.cn/jsxsd/"
