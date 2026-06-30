@@ -461,8 +461,8 @@ CAS_LOGIN_URL = "https://auth.wust.edu.cn/lyuapServer/login?service=https://port
 def solve_captcha(page):
     """截取验证码图片，用 ddddocr 识别算术表达式并计算答案。
 
-    WUST CAS 验证码特征：始终是 X+Y=? 形式的加法题（单数字+单数字）。
-    返回 (answer, expression) 或 (None, None)"""
+    WUST CAS 验证码特征：数字 运算符 数字 = ? 形式的算术题。
+    支持加减乘除四种运算。返回 (answer, expression) 或 (None, None)"""
     import ddddocr
 
     captcha_img = page.query_selector('.index-formContent-2fe6T img[alt="logo"]')
@@ -483,9 +483,10 @@ def solve_captcha(page):
 
     # ── 后处理：修正 ddddocr 常见误识别 ──
     cleaned = raw
-    cleaned = re.sub(r'[=\s]+$', '', cleaned)
-    corrections = {
-        '*': '+', 'x': '+', 'X': '+',
+    cleaned = re.sub(r'[=\s?？]+$', '', cleaned)
+
+    # 数字修正
+    digit_map = {
         'o': '0', 'O': '0', 'Q': '0',
         'l': '1', 'I': '1', 'i': '1',
         'Z': '2', 'z': '2',
@@ -493,22 +494,44 @@ def solve_captcha(page):
         'B': '8',
         'g': '9',
     }
-    for wrong, right in corrections.items():
+    for wrong, right in digit_map.items():
         cleaned = cleaned.replace(wrong, right)
 
+    # 运算符修正：x/X/× → *（乘号），÷ → /
+    cleaned = cleaned.replace('×', '*').replace('x', '*').replace('X', '*')
+    cleaned = cleaned.replace('÷', '/')
+
     # 尝试匹配算术表达式: 数字 运算符 数字
-    expr_match = re.match(r'^\s*(\d+)\s*([+\-])\s*(\d+)', cleaned)
+    expr_match = re.match(r'^\s*(\d+)\s*([+\-*/])\s*(\d+)', cleaned)
     if expr_match:
         a, op, b = int(expr_match.group(1)), expr_match.group(2), int(expr_match.group(3))
-        answer = str(a + b) if op == '+' else str(a - b)
-        return answer, f"{raw} → {cleaned} = {answer}"
+        if op == '+':
+            answer = str(a + b)
+        elif op == '-':
+            answer = str(a - b)
+        elif op == '*':
+            answer = str(a * b)
+        elif op == '/':
+            answer = str(a // b) if b != 0 else None
+        else:
+            answer = None
+        if answer is not None:
+            return answer, f"{raw} → {cleaned} → {a}{op}{b}={answer}"
 
-    # 回退：尝试只提取数字做加法
-    digits = re.findall(r'\d', cleaned)
+    # 回退：提取数字，尝试四种运算（按频率：加减乘除）
+    # 先用 \d+ 匹配多位数，若只有一个数则退到逐位拆分（OCR 可能把 "1?6" 糊成 "16"）
+    digits = re.findall(r'\d+', cleaned)
+    if len(digits) < 2:
+        digits = re.findall(r'\d', cleaned)
     if len(digits) >= 2:
         a, b = int(digits[0]), int(digits[1])
-        answer = str(a + b)
-        return answer, f"{raw} → digits:{digits} → {a}+{b}={answer}"
+        for op_name, op_func in [('+', lambda x, y: x + y),
+                                  ('-', lambda x, y: x - y),
+                                  ('*', lambda x, y: x * y),
+                                  ('/', lambda x, y: x // y if y != 0 else None)]:
+            result = op_func(a, b)
+            if result is not None:
+                return str(result), f"{raw} → digits:[{a},{b}] → {a}{op_name}{b}={result}"
 
     # 最后回退：直接返回 cleaned
     return cleaned, raw
