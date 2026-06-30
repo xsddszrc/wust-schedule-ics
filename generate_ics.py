@@ -7,10 +7,7 @@
   # 1. 首次使用 — 手动登录（验证码）
   python3 generate_ics.py --login --no-headless
 
-  # 2. 之后每周自动更新 + 推送到 GitHub
-  python3 generate_ics.py --push
-
-  # 3. 设置 crontab 定时任务（Mac/Linux）
+  # 2. 设置 crontab 定时任务（Mac/Linux）
   # crontab -e  添加:
   # 0 8 * * 1 cd /path/to/project && python3 generate_ics.py --push
 
