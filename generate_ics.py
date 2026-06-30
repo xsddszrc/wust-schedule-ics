@@ -8,8 +8,8 @@
   python3 generate_ics.py --login --no-headless
 
   # 2. 设置 crontab 定时任务（Mac/Linux）
-  # crontab -e  添加:
-  # 0 8 * * 1 cd /path/to/project && python3 generate_ics.py --push
+    # crontab -e  添加:
+    # 0 8 * * 1 cd /path/to/project && python3 generate_ics.py
 
 ═══════════════════════════════════════════════════════════
 依赖: pip install playwright beautifulsoup4
@@ -21,7 +21,6 @@ import argparse
 import json
 import os
 import re
-import subprocess
 import sys
 import uuid as uuid_mod
 from datetime import date, datetime, timedelta
@@ -863,45 +862,6 @@ def fetch_schedule(headless=True, auto_relogin=True):
 
 
 # ═══════════════════════════════════════════════════════════
-# Git 操作
-# ═══════════════════════════════════════════════════════════
-
-def git_push(message="Update schedule.ics", branch="main"):
-    """将 ICS 文件提交并推送到 GitHub"""
-    os.chdir(SCRIPT_DIR)
-
-    # 检查是否在 git 仓库中
-    result = subprocess.run(["git", "rev-parse", "--git-dir"],
-                            capture_output=True, text=True)
-    if result.returncode != 0:
-        print("⚠️  当前目录不是 Git 仓库，跳过推送")
-        print("   初始化方式: git init && git remote add origin <你的仓库URL>")
-        return False
-
-    # git add
-    subprocess.run(["git", "add", str(OUTPUT_FILE)], check=True)
-
-    # 检查是否有变更
-    diff_result = subprocess.run(
-        ["git", "diff", "--staged", "--quiet", str(OUTPUT_FILE)],
-        capture_output=True
-    )
-    if diff_result.returncode == 0:
-        print("📦 课表无变化，跳过提交")
-        return True
-
-    # git commit
-    subprocess.run(["git", "commit", "-m", message], check=True)
-    print(f"📝 已提交: {message}")
-
-    # git push
-    subprocess.run(["git", "push", "origin", branch], check=True)
-    print(f"🚀 已推送到 origin/{branch}")
-
-    return True
-
-
-# ═══════════════════════════════════════════════════════════
 # 主程序
 # ═══════════════════════════════════════════════════════════
 
@@ -913,7 +873,6 @@ def main():
 示例:
   python3 generate_ics.py --login --no-headless   首次登录
   python3 generate_ics.py                          日常抓取
-  python3 generate_ics.py --push                   抓取并推送到 GitHub
   python3 generate_ics.py --semester-start 2026-03-09  手动指定学期日期
         """
     )
@@ -923,12 +882,6 @@ def main():
                         help="显示浏览器窗口（调试或首次登录时使用）")
     parser.add_argument("--semester-start", type=str, default=None,
                         help="学期第一周周一日期 YYYY-MM-DD（留空则自动检测）")
-    parser.add_argument("--push", action="store_true",
-                        help="自动 git commit & push ICS 文件")
-    parser.add_argument("--push-message", type=str, default="Update schedule.ics",
-                        help="Git 提交信息（默认: 'Update schedule.ics'）")
-    parser.add_argument("--branch", type=str, default="main",
-                        help="Git 推送分支（默认: main）")
     parser.add_argument("-o", "--output", type=str, default=None,
                         help=f"输出 ICS 文件路径（默认: {OUTPUT_FILE}）")
     parser.add_argument("--html-file", type=str, default=None,
@@ -1009,41 +962,14 @@ def main():
     print(f"✅ ICS 文件已保存: {output_path}")
     print(f"   {event_count} 个日历事件, {len(ics_content)} bytes")
 
-    # ===== 推送到 GitHub =====
-    if args.push:
-        print()
-        git_push(message=args.push_message, branch=args.branch)
-
     # ===== 输出摘要 =====
     print()
     print("=" * 60)
     print("📱 ICS 订阅设置:")
     print()
-    if args.push:
-        # 尝试推断 GitHub Pages URL
-        try:
-            remote = subprocess.run(
-                ["git", "remote", "get-url", "origin"],
-                capture_output=True, text=True
-            ).stdout.strip()
-            # 转换 git URL 为 Pages URL
-            # git@github.com:user/repo.git → https://user.github.io/repo/schedule.ics
-            # https://github.com/user/repo.git → https://user.github.io/repo/schedule.ics
-            pages_url = remote
-            pages_url = re.sub(r'^git@github\.com:', 'https://github.com/', pages_url)
-            pages_url = re.sub(r'\.git$', '', pages_url)
-            pages_url = re.sub(r'https://github\.com/', 'https://', pages_url)
-            pages_url = re.sub(r'https://([^/]+)/([^/]+)$', r'https://\1.github.io/\2', pages_url)
-            pages_url += '/schedule.ics'
-            print(f"   🔗 订阅链接: {pages_url}")
-            print(f"   ⚠️  需要在 GitHub 仓库 Settings → Pages 中启用 GitHub Pages")
-            print(f"       Source 选择 'Deploy from a branch' → 分支选 '{args.branch}'")
-        except Exception:
-            print("   🔗 推送后访问: https://用户名.github.io/仓库名/schedule.ics")
-    else:
-        print("   💡 使用 --push 自动推送到 GitHub Pages")
-        print(f"   💡 或设置 crontab 定时运行:")
-        print(f"      0 8 * * 1 cd {SCRIPT_DIR} && python3 generate_ics.py --push")
+    print(f"   💡 文件已生成到: {output_path}")
+    print(f"   💡 如需自动更新，可用 crontab 定时运行:")
+    print(f"      0 8 * * 1 cd {SCRIPT_DIR} && python3 generate_ics.py")
     print("=" * 60)
 
 
