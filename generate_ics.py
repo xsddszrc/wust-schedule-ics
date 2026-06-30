@@ -32,6 +32,23 @@ AUTH_FILE = SCRIPT_DIR / "auth_state.json"
 OUTPUT_FILE = SCRIPT_DIR / "schedule.ics"
 CONFIG_FILE = SCRIPT_DIR / ".wust_ics_config.json"
 ENV_FILE = SCRIPT_DIR / ".env"
+LOG_FILE = SCRIPT_DIR / "wust_ics.log"
+
+
+class Tee:
+    """同时写入终端和日志文件"""
+    def __init__(self, filepath):
+        self.terminal = sys.stdout
+        self.logfile = open(filepath, 'a', encoding='utf-8')
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.logfile.write(message)
+        self.logfile.flush()
+
+    def flush(self):
+        self.terminal.flush()
+        self.logfile.flush()
 
 
 def load_dotenv():
@@ -912,6 +929,10 @@ def main():
 
     args = parser.parse_args()
     headless = not args.no_headless
+
+    # 终端输出同步写入日志文件
+    sys.stdout = Tee(LOG_FILE)
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 开始运行\n")
 
     # ===== 获取课表 HTML =====
 
